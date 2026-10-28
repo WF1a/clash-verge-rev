@@ -50,13 +50,20 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm run prebuild x86_64-apple-darwin
 
-      - name: Disable updater artifacts (no signing key, no auto-update)
+      - name: Patch tauri config (no updater artifacts, pin build target)
         run: |
-          jq '.bundle.createUpdaterArtifacts = false' src-tauri/tauri.conf.json > src-tauri/tauri.conf.json.tmp
+          jq '.bundle.createUpdaterArtifacts = false | .build.target = "x86_64-apple-darwin"' src-tauri/tauri.conf.json > src-tauri/tauri.conf.json.tmp
           mv src-tauri/tauri.conf.json.tmp src-tauri/tauri.conf.json
 
       - name: Tauri build
         run: pnpm build -- --target x86_64-apple-darwin
+
+      - name: Collect build outputs (diagnostics)
+        if: always()
+        run: |
+          ls -l target/release/clash-verge 2>/dev/null || true
+          ls -l target/x86_64-apple-darwin/release/clash-verge 2>/dev/null || true
+          file target/*/release/clash-verge 2>/dev/null || true
 
       - name: Upload DMG
         uses: actions/upload-artifact@v4
