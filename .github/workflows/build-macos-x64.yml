@@ -1,0 +1,58 @@
+name: Build macOS x64 DMG
+
+on:
+  push:
+    branches: [fix/array-at-polyfill]
+  workflow_dispatch:
+
+env:
+  CARGO_INCREMENTAL: 0
+  RUST_BACKTRACE: short
+  HUSKY: 0
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          targets: x86_64-apple-darwin
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            . -> target
+
+      - name: Install Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24.21.0'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          run_install: false
+
+      - name: Install dependencies and prebuild
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run prebuild x86_64-apple-darwin
+
+      - name: Disable updater artifacts (no signing key in this workflow)
+        run: |
+          echo '{ "bundle": { "createUpdaterArtifacts": false } }' > src-tauri/tauri.local.conf.json
+
+      - name: Tauri build
+        run: pnpm build -- --target x86_64-apple-darwin --config src-tauri/tauri.local.conf.json
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: ClashVerge-${{ github.sha }}-macos-x64
+          path: target/x86_64-apple-darwin/release/bundle/dmg/*.dmg
+          if-no-files-found: error
