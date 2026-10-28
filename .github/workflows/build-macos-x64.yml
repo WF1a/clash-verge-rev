@@ -23,6 +23,12 @@ jobs:
           toolchain: '1.99.1'
           targets: x86_64-apple-darwin
 
+      - name: Ensure Rust target on pinned toolchain
+        run: |
+          rustup target add x86_64-apple-darwin
+          rustup target list --installed
+          rustup show active-toolchain
+
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
         with:
