@@ -50,14 +50,10 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm run prebuild x86_64-apple-darwin
 
-      - name: Generate ephemeral updater signing key
+      - name: Disable updater artifacts (no signing key, no auto-update)
         run: |
-          pnpm tauri signer generate -w "$RUNNER_TEMP/updater.key" --password ''
-          {
-            echo 'TAURI_SIGNING_PRIVATE_KEY<<EOF'
-            cat "$RUNNER_TEMP/updater.key"
-            echo 'EOF'
-          } >> "$GITHUB_ENV"
+          jq '.bundle.createUpdaterArtifacts = false' src-tauri/tauri.conf.json > src-tauri/tauri.conf.json.tmp
+          mv src-tauri/tauri.conf.json.tmp src-tauri/tauri.conf.json
 
       - name: Tauri build
         run: pnpm build -- --target x86_64-apple-darwin
