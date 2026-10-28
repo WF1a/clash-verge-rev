@@ -49,7 +49,7 @@ jobs:
           echo '{ "bundle": { "createUpdaterArtifacts": false } }' > src-tauri/tauri.local.conf.json
 
       - name: Tauri build
-        run: pnpm build -- --target x86_64-apple-darwin --config src-tauri/tauri.local.conf.json
+        run: pnpm build -- --target x86_64-apple-darwin --config "$GITHUB_WORKSPACE/src-tauri/tauri.local.conf.json"
 
       - name: Upload DMG
         uses: actions/upload-artifact@v4
