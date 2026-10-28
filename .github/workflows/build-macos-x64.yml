@@ -46,10 +46,10 @@ jobs:
 
       - name: Disable updater artifacts (no signing key in this workflow)
         run: |
-          echo '{ "bundle": { "createUpdaterArtifacts": false } }' > src-tauri/tauri.local.conf.json
+          printf '[bundle]\ncreateUpdaterArtifacts = false\n' > src-tauri/tauri.local.conf.toml
 
       - name: Tauri build
-        run: pnpm build -- --target x86_64-apple-darwin --config "$GITHUB_WORKSPACE/src-tauri/tauri.local.conf.json"
+        run: pnpm build -- --target x86_64-apple-darwin --config "$GITHUB_WORKSPACE/src-tauri/tauri.local.conf.toml"
 
       - name: Upload DMG
         uses: actions/upload-artifact@v4
